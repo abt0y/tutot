@@ -1,0 +1,130 @@
+# Decentralized AI Knowledge Engine (Inspired by DeepTutor & memvid)
+
+This plan outlines the architecture and implementation for a fully client-side, persistent knowledge system. The system runs in the browser via Rust + WebAssembly, using GitHub for identity and storage.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **GitHub OAuth (PKCE)**: Since there is NO backend, we must use GitHub's OAuth with PKCE. My plan assumes a pure client-side approach.
+>
+> **LLM API Keys**: The user must provide an LLM API key (OpenAI/Anthropic/Google). This will be stored securely in the browser's `localStorage`.
+>
+> **WASM Performance**: Large wiki operations might be slow over the network. We will implement a "staged commit" pattern to minimize roundtrips.
+
+## 1. System Architecture (Mermaid)
+
+```mermaid
+graph TD
+    subgraph "Browser (Rust + WASM)"
+        UI[UI Layer - HTML/JS/CSS]
+        Core[Core Logic - Rust Engine]
+        Agents[Multi-Agent System]
+        GH_Client[GitHub API Client]
+        Memvid[memvid Session Engine]
+        Search[Vector/BM25 Search]
+    end
+
+    subgraph "GitHub (Database & Identity)"
+        Repo["user-private-repo/"]
+        Raw["/raw/ (Immutable Sources)"]
+        Wiki["/wiki/ (LLM-Maintained)"]
+        Schema["/schema/ (LLM OS)"]
+        History["/memvid/ (Session Artifacts)"]
+    end
+
+    subgraph "External AI Services"
+        LLM[LLM API - Claude/GPT/Gemini]
+    end
+
+    UI <--> Core
+    Core <--> Agents
+    Agents <--> GH_Client
+    Agents <--> LLM
+    GH_Client <--> Repo
+    Core <--> Memvid
+    Memvid --> History
+```
+
+## 2. GitHub Repository Structure
+
+The user's knowledge base will be a private GitHub repository with the following structure:
+
+```text
+/
+├── raw/                # Source files (PDF, MD, TXT, etc.)
+│   └── research_paper_v1.pdf
+├── wiki/               # The Primary Database (Markdown)
+│   ├── index.md        # Entry point for LLM/User
+│   ├── log.md          # Chronological record
+│   ├── entities/       # People, places, organizations
+│   ├── concepts/       # Theories, ideas
+│   └── topics/         # Broad subject areas
+├── schema/             # System Instructions (Immutable-ish)
+│   ├── AGENTS.md       # Agent definitions & personas
+│   └── WORKFLOWS.md    # Ingest, Lint, Query protocols
+└── memvid/             # Session Memory (.json / .mv2)
+    └── session-2024-04-07.json
+```
+
+## 3. Wiki File Schema Examples
+
+### Concept Page (`/wiki/concepts/distributed_consensus.md`)
+```markdown
+---
+title: Distributed Consensus
+last_updated: 2024-04-07
+tags: [systems, algorithms]
+citations: [raw/paxos_made_simple.pdf]
+---
+
+# Distributed Consensus
+
+## Summary
+The process of reaching agreement on a single data value among distributed processes or systems.
+
+## Related
+- [[paxos]]
+- [[raft]]
+- [[byzantine_fault_tolerance]]
+
+## Context
+Extracted from "Paxos Made Simple". It is critical for maintaining consistency in decentralized systems.
+```
+
+## 4. Rust Crate Design
+
+The application will be structured as a workspace with several specialized crates:
+
+- **`core`**: Main orchestrator, state management, and WASM entry points.
+- **`agents`**: Implementations of Ingest, Maintainer, Query, Linking, and Lint agents.
+- **`github`**: Wrapper for GitHub REST/GraphQL API.
+- **`wiki`**: Markdown parsing, metadata extraction, and inter-linking logic.
+- **`memvid`**: Integration with the `memvid` library for session recording.
+- **`ui`**: Minimal JS/HTML for the chat and wiki browser interface.
+
+## 5. End-to-End User Flow
+
+1.  **Auth**: User logs in with GitHub (PKCE).
+2.  **Selection**: User selects an existing "Knowledge Repo" or creates a new one.
+3.  **Ingest**:
+    - User uploads `article.pdf`.
+    - `github` crate pushes it to `/raw/`.
+    - `Ingest Agent` reads the file.
+    - `Wiki Maintainer Agent` identifies multiple pages to create/update.
+    - `Linking Agent` ensures `index.md` and related pages are interlinked.
+    - `github` crate performs a single multi-file commit to `/wiki/`.
+4.  **Query**:
+    - User asks questions, `Query Agent` scans `/wiki/index.md`, retrieves pages.
+5.  **Session End**:
+    - `memvid` crate generates session artifact and commits it.
+
+## 6. Verification Plan
+
+### Automated Tests
+- **Unit Tests (Rust)**: Test markdown parsing and inter-linking logic.
+- **WASM Tests**: Run `wasm-pack test` in a headless browser.
+
+### Manual Verification
+- Deploy to GitHub Pages.
+- Authenticate and perform a full ingestion cycle.
+- Verify the repo structure.

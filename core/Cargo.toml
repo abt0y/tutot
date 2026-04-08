@@ -1,0 +1,21 @@
+[package]
+name = "core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+wasm-bindgen = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+js-sys = { workspace = true }
+web-sys = { workspace = true }
+agents = { path = "../agents" }
+pedagogy = { path = "../pedagogy" }
+wiki = { path = "../wiki" }
+github = { path = "../github" }
+memvid-core = { path = "../memvid", default-features = false }
+log = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }

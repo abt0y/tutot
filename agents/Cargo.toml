@@ -1,0 +1,18 @@
+[package]
+name = "agents"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+async-trait = "0.1"
+futures = { workspace = true }
+log = { workspace = true }
+github = { path = "../github" }
+wiki = { path = "../wiki" }
+pedagogy = { path = "../pedagogy" }
+chrono = { version = "0.4", features = ["serde"] }
+reqwest = { workspace = true }

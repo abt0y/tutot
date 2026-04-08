@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepTutor | Decentralized AI Knowledge Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo">DeepTutor</div>
+        <div class="nav-links">
+            <button id="toggle-graph">Knowledge Graph</button>
+            <button id="open-settings">Settings</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <section id="chat-section">
+            <div id="chat-history">
+                <div class="message tutor-message">
+                    Hello! I'm DeepTutor. To get started, please configure your GitHub and LLM settings.
+                </div>
+            </div>
+            <div class="input-area">
+                <div class="input-container">
+                    <input type="text" id="user-input" placeholder="Ask anything about your knowledge base..." disabled>
+                    <button id="send-btn" disabled>Send</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="wiki-section">
+            <div id="wiki-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="font-size: 0.9rem; text-transform: uppercase; color: var(--text-secondary);">Knowledge Wiki</h2>
+                <button id="close-wiki" style="font-size: 0.8rem; color: var(--accent-color); display: none;">Back to Graph</button>
+            </div>
+            <div id="wiki-pages">
+                <div id="wiki-welcome-msg" style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem;">
+                    Wiki updates from the tutor will appear here in real-time.
+                </div>
+                <div id="page-content" class="wiki-card" style="display: none;">
+                    <h2 id="page-title"></h2>
+                    <div id="page-body" class="wiki-content"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Graph Overlay -->
+    <div id="graph-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color); z-index: 500;">
+        <div style="padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 1.2rem; color: var(--accent-color);">Knowledge Graph</h2>
+            <button id="close-graph" style="padding: 0.5rem 1rem; background: var(--border-color); color: white; border-radius: 8px;">Close Graph</button>
+        </div>
+        <div id="graph-container" style="width: 100%; height: calc(100% - 60px); overflow: hidden;">
+            <!-- D3.js svg will be injected here -->
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="settings-modal">
+        <h2 style="margin-bottom: 1.5rem;">Configuration</h2>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">GitHub Token</label>
+            <input type="password" id="gh-token" placeholder="ghp_..." style="width: 100%; padding: 0.75rem; background: var(--border-color); border: 1px solid transparent; border-radius: 8px;">
+        </div>
+        <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">Repo Owner</label>
+                <input type="text" id="gh-owner" placeholder="username" style="width: 100%; padding: 0.75rem; background: var(--border-color); border: 1px solid transparent; border-radius: 8px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">Repo Name</label>
+                <input type="text" id="gh-repo" placeholder="ai-knowledge-wiki" style="width: 100%; padding: 0.75rem; background: var(--border-color); border: 1px solid transparent; border-radius: 8px;">
+            </div>
+        </div>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">LLM API Key (OpenAI Compatible)</label>
+            <input type="password" id="llm-key" placeholder="sk-..." style="width: 100%; padding: 0.75rem; background: var(--border-color); border: 1px solid transparent; border-radius: 8px;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+            <button id="close-settings" style="color: var(--text-secondary);">Cancel</button>
+            <button id="save-settings" style="background: var(--accent-color); color: white; padding: 0.75rem 1.5rem; border-radius: 8px;">Save & Initialize</button>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

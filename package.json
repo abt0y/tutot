@@ -1,0 +1,26 @@
+{
+  "name": "decentralized-deeptutor",
+  "version": "1.0.0",
+  "description": "A fully client-side AI tutoring system with persistent memory and knowledge graph.",
+  "main": "app.js",
+  "scripts": {
+    "build": "wasm-pack build core --target web --out-dir pkg",
+    "serve": "npx serve .",
+    "build:optimized": "wasm-pack build core --target web --out-dir pkg --release",
+
+    "test": "cargo test"
+  },
+  "keywords": [
+    "wasm",
+    "rust",
+    "ai",
+    "tutor",
+    "knowledge-graph",
+    "github-pages"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
