@@ -8,6 +8,7 @@ pub mod tutor;
 pub mod critic;
 pub mod synthesizer;
 pub mod llm;
+pub mod prompts;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentContext {

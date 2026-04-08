@@ -1,34 +1,14 @@
-# Task Breakdown: Decentralized DeepTutor
-
-## 🏗 Phase 1: Foundation & Project Setup
-- [x] Initialize Rust Workspace (`Cargo.toml`)
-- [x] Create core crates: `core`, `agents`, `pedagogy`, `wiki`, `github`, `memvid`, `ui`
-- [/] Configure `wasm-pack` and `wasm-bindgen` for browser support
-- [ ] Setup CI/CD stub for GitHub Pages deployment
-
-## 🤖 Phase 2: Agent & Pedagogy Core
-- [/] Implement `Agent` Trait in `agents` crate
-- [ ] Build `PlannerAgent` and `TutorAgent` logic
-- [ ] Design `Pedagogy` strategy selector (Socratic, Direct)
-- [ ] Implement the Reasoning Loop (`Planner -> Tutor -> Critic -> Synthesizer`)
-
-## 📂 Phase 3: Wiki & GitHub Persistence
-- [ ] Implement GitHub API Client (REST/GraphQL) in `github` crate
-- [ ] Design multi-file atomic commit logic (Git trees/blobs)
-- [ ] Build Markdown/Wiki parsing and linking engine in `wiki` crate
-- [ ] Implement initial `index.md` and `user_profile.md` templates
-
-## 🎥 Phase 4: Session Memory (memvid)
-- [ ] Integrate `memvid` for artifact generation
-- [ ] Implement `SessionRecorder` for tracking wiki diffs and chat history
-- [ ] Automated session seal and push to GitHub `/memvid/`
-
-## 🖥 Phase 5: UI & Interface
-- [ ] Build the Adaptive Tutor UI (Chat + Wiki Browser)
-- [ ] Implement WASM-JS Bridge (the `Engine` interface)
-- [ ] Add Graph visualization for the knowledge wiki
-
-## 🧪 Phase 6: Verification & Deployment
-- [ ] Run WASM unit/integration tests
-- [ ] Final manual end-to-end verification (Auth → Ingest → Tutor)
-- [ ] Deploy to GitHub Pages
+- [ ] Root Project Organization
+    - [x] Update `.gitignore` to include `target/` and other artifacts
+    - [x] Create a professional root `README.md`
+    - [x] Create a root `Makefile` for common tasks
+    - [x] Verify root `Cargo.toml` linkages
+- [/] Rust Agents Refinement
+    - [ ] Create `agents/src/prompts.rs` to centralize agent prompts
+    - [ ] Add `backoff` dependency to `agents/Cargo.toml`
+    - [ ] Enhance `agents/src/llm.rs` with exponential backoff and better error handling
+    - [ ] Refactor `planner.rs`, `tutor.rs`, `critic.rs`, and `synthesizer.rs` to use `prompts.rs`
+- [ ] Quality & Verification
+    - [ ] Add integration tests in `agents/tests/agent_tests.rs`
+    - [ ] Run `cargo test --workspace` to verify everything builds and passes
+    - [ ] Create a final `walkthrough.md`

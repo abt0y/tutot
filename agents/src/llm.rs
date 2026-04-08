@@ -53,7 +53,7 @@ impl LLMClient for GenericLLMClient {
     async fn chat_completion(&self, system: &str, user: &str) -> Result<String> {
         let url = format!("{}/chat/completions", self.base_url);
         
-        let request = ChatCompletionRequest {
+        let request_body = ChatCompletionRequest {
             model: self.model.clone(),
             messages: vec![
                 ChatMessage {
@@ -67,21 +67,31 @@ impl LLMClient for GenericLLMClient {
             ],
         };
 
-        let response = self.client.post(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .json(&request)
-            .send()
-            .await?;
+        let op = || async {
+            let response = self.client.post(&url)
+                .header("Authorization", format!("Bearer {}", self.api_key))
+                .json(&request_body)
+                .send()
+                .await
+                .map_err(backoff::Error::transient)?;
 
-        if !response.status().is_success() {
-            let error_text = response.text().await.unwrap_or_default();
-            return Err(anyhow!("LLM API error: {} - {}", response.status(), error_text));
-        }
+            if response.status().is_server_error() || response.status().as_u16() == 429 {
+                let error_text = response.text().await.unwrap_or_default();
+                return Err(backoff::Error::transient(anyhow!("LLM API transient error: {} - {}", response.status(), error_text)));
+            }
 
-        let body: ChatCompletionResponse = response.json().await?;
-        
-        body.choices.first()
-            .map(|c| c.message.content.clone())
-            .ok_or_else(|| anyhow!("No response from LLM"))
+            if !response.status().is_success() {
+                let error_text = response.text().await.unwrap_or_default();
+                return Err(backoff::Error::permanent(anyhow!("LLM API permanent error: {} - {}", response.status(), error_text)));
+            }
+
+            let body: ChatCompletionResponse = response.json().await.map_err(backoff::Error::permanent)?;
+            
+            body.choices.first()
+                .map(|c| c.message.content.clone())
+                .ok_or_else(|| backoff::Error::permanent(anyhow!("No response from LLM")))
+        };
+
+        backoff::future::retry(backoff::ExponentialBackoff::default(), op).await
     }
 }

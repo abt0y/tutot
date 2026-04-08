@@ -1,137 +1,69 @@
-# 🚀 Revised Implementation Plan: Decentralized DeepTutor
+# DeepTutor Polish & Production Readiness Plan
 
-This plan defines the architecture for a **fully client-side AI tutoring system** (DeepTutor-equivalent) that runs in the browser via Rust + WebAssembly, using GitHub for identity and persistent storage (LLM Wiki + memvid).
+This plan addresses the critical feedback regarding the project's structure, completeness, and production readiness. We will transform the current prototype into a more professional and robust monorepo.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **GitHub OAuth (PKCE)**: Pure client-side authentication. We will use a PKCE flow to avoid needing a backend client secret.
->
-> **Security**: LLM API keys will be stored in `sessionStorage` or in-memory ONLY.
->
-> **Multi-Agent Convergence**: The reasoning loop (Planner -> Tutor -> Critic -> Synthesizer) requires robust error handling in WASM to ensure tasks complete or resume gracefully.
+> - **LLM Retries**: I will add `backoff` or a similar retry mechanism to `llm.rs`. This adds a dependency to the `agents` crate.
+> - **Root Structure**: I will move some root-level files (e.g., `app.js`, `graph.js`, `style.css`, `index.html`) into a `frontend/` or `web/` directory if you agree, to keep the root clean. For now, I'll keep them but organize them in the `README.md`.
 
-## 1. DeepTutor Feature Mapping
+## Proposed Changes
 
-| DeepTutor Feature          | WASM + GitHub Implementation |
-| -------------------------- | ------------------------- |
-| Multi-agent reasoning loop | Rust async agent orchestrator |
-| Tutor-student interaction  | Chat + Guided Pedagogy UI |
-| RAG over documents         | LLM Wiki (Persistent Markdown Graph) |
-| Knowledge synthesis        | Synthesizer + Maintainer Agents |
-| Iterative reasoning        | Agent loop with in-memory context |
-| Personalized learning      | `wiki/user_profile.md` + Learning Paths |
-| Session tracking           | `memvid` (.mv2) artifact generation |
-| Tool usage                 | WASM-native tools + external API calls |
+---
 
-## 2. System Architecture (DeepTutor-Complete)
+### Root Project Organization
 
-```mermaid
-graph TD
-    subgraph "Browser (Rust + WASM)"
-        UI[Adaptive Tutor UI]
-        Core[Learning Engine]
-        Agents[Multi-Agent Orchestrator]
-        Pedagogy[Teaching Strategy Engine]
-        Memory[Wiki + Session Memory]
-        GH[GitHub API Client]
-        Memvid[memvid Recorder]
-        Search[Wiki Search Engine]
-    end
+#### [MODIFY] [.gitignore](file:///c:/Users/b/Desktop/ai-tutor/.gitignore)
+- Add `target/`, `.DS_Store`, `node_modules/`, and other common build artifacts.
 
-    subgraph "GitHub (User Private Repo)"
-        Raw[/raw/ Sources]
-        Wiki[/wiki/ Knowledge Base]
-        Schema[/schema/ Agent Rules]
-        Sessions[/memvid/ Sessions]
-    end
+#### [NEW] [README.md](file:///c:/Users/b/Desktop/ai-tutor/README.md)
+- Provide a high-level overview of the decentralized AI tutor.
+- Architecture diagram (text-based or Mermaid).
+- Quickstart guide for both Rust and Python/Docker components.
 
-    subgraph "External"
-        LLM[LLM APIs]
-    end
+#### [NEW] [Makefile](file:///c:/Users/b/Desktop/ai-tutor/Makefile)
+- Add common tasks: `build`, `test`, `run-frontend`, `docker-up`.
 
-    UI <--> Core
-    Core <--> Agents
-    Agents <--> Pedagogy
-    Agents <--> Memory
-    Memory <--> Search
-    Agents <--> GH
-    Agents <--> LLM
-    Core <--> Memvid
-    GH <--> Raw
-    GH <--> Wiki
-    GH <--> Sessions
-```
+#### [MODIFY] [Cargo.toml](file:///c:/Users/b/Desktop/ai-tutor/Cargo.toml)
+- Ensure all members are correctly listed and linked.
 
-## 3. Pedagogical Intelligence Layer (`pedagogy/`)
+---
 
-This module implements the "brain" of the tutor:
-- **Learning Strategies**: Socratic, Direct Instruction, Inquiry-based.
-- **Adaptive Difficulty**: Scaling terminology and complexity based on `user_profile.md`.
-- **Question Generation**: Dynamic assessment based on wiki content.
+### Rust Agents Refinement (`agents` crate)
 
-### Multi-Agent Registry:
-- **Tutor Agent**: Primary interface, manages the dialogue and pedagogical choice.
-- **Planner Agent**: Analyzes the gap between user knowledge and target concept.
-- **Critic Agent**: Evaluates student responses for misconceptions.
-- **Synthesizer Agent**: Merges new knowledge/corrections into the Wiki.
-- **Ingest Agent**: Processes raw sources into the knowledge graph.
-- **Lint Agent**: Self-maintains wiki consistency (orphan detection, contradictions).
+#### [NEW] [prompts.rs](file:///c:/Users/b/Desktop/ai-tutor/agents/src/prompts.rs)
+- Centralize all system and user prompt templates as constants to avoid magic strings and duplication.
 
-## 4. Storage Model (GitHub = Database)
+#### [MODIFY] [llm.rs](file:///c:/Users/b/Desktop/ai-tutor/agents/src/llm.rs)
+- Implement exponential backoff for LLM API calls.
+- Improve error reporting.
 
-The repository structure is expanded to support DeepTutor features:
+#### [MODIFY] [Agent Implementations](file:///c:/Users/b/Desktop/ai-tutor/agents/src/)
+- Refactor `planner.rs`, `tutor.rs`, `critic.rs`, and `synthesizer.rs` to use the new `prompts.rs`.
+- Improve `synthesizer.rs` path extraction logic.
 
-```text
-/
-├── raw/                # Source files (Immutable)
-├── wiki/               # Persistent Long-Term Memory
-│   ├── index.md        # Content map
-│   ├── log.md          # Session log
-│   ├── user_profile.md # Learning history & preferences [NEW]
-│   ├── learning_paths/ # Structured curricula [NEW]
-│   ├── misconceptions/ # Logged student errors [NEW]
-│   ├── explanations/   # Generated student-specific content [NEW]
-│   ├── entities/       # People, Places, Tools
-│   └── concepts/       # Theories, Ideas
-├── schema/             # Agent Personas & Protocols
-└── memvid/             # Binary/JSON Session Replays
-```
+---
 
-## 5. Reasoning & Learning Loops
+### Quality Assurance
 
-```text
-User Input
-   ↓
-Planner Agent (Assess Knowledge Gap)
-   ↓
-Tutor Agent (Select Strategy & Generate Response)
-   ↓
-Critic Agent (Optional: Peer review response or evaluate User)
-   ↓
-Synthesizer → Wiki Update (Long-term memory anchor)
-   ↓
-Response to User + UI Update (Wiki links, graph nodes)
-```
+#### [NEW] [tests/agent_tests.rs](file:///c:/Users/b/Desktop/ai-tutor/agents/tests/agent_tests.rs)
+- Add integration tests for the agent loop using a mock LLM.
 
-## 6. Rust Crate Structure (WASM Workspace)
+---
 
-- **`core`**: Orchestration and WASM Bindings.
-- **`agents`**: Agent traits and specific implementations.
-- **`pedagogy`**: Learning models and strategy selectors.
-- **`github`**: GitHub API (REST/GraphQL) client.
-- **`wiki`**: Markdown processing & graph resolution.
-- **`memvid`**: Session lifecycle and `.mv2` recording.
-- **`ui`**: Adaptive frontend (likely React/Vue/Vanilla JS bridged to WASM).
+## Open Questions
 
-## 7. Verification Plan
+- **Frontend Location**: Should I move the root JS/HTML/CSS files into a `frontend/` directory to keep the root clean?
+- **LLM Provider**: The current `GenericLLMClient` assumes OpenAI-compatible `/chat/completions`. Should we add support for others (e.g., Anthropic, local Llama via Ollama)?
 
-### Automated
-- **Loop Convergence**: Verify Planner -> Tutor -> Critic terminates with valid output.
-- **Wiki Integrity**: Test recursive link resolution and frontmatter extraction.
-- **WASM Performance**: benchmark commit batching to avoid GitHub rate limits.
+## Verification Plan
 
-### Manual
-- **Pedagogy Test**: Verify "Socratic Mode" doesn't give direct answers.
-- **Session Replay**: Verify `memvid` artifacts correctly capture the "Wiki Diffs".
-- **Deployment**: Verify full flow on GitHub Pages.
+### Automated Tests
+- `cargo test --workspace`: Ensure all crates build and tests pass.
+- `cargo fmt --all --check`: Ensure code style is consistent.
+
+### Manual Verification
+- Verify that `target/` is no longer tracked by Git.
+- Inspect the new `README.md` for clarity and completeness.
+- Run a dummy agent loop in a scratch script to verify retry logic.

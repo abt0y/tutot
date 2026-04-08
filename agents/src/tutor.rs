@@ -21,20 +21,14 @@ impl Agent for TutorAgent {
         let strategy = context.metadata.get("strategy").cloned().unwrap_or_else(|| "DIRECT".to_string());
         let plan = context.metadata.get("plan").cloned().unwrap_or_else(|| "Provide a clear and helpful explanation.".to_string());
 
-        let system_prompt = format!(
-            "You are the Pedagogical Tutor Agent for Decentralized DeepTutor. \
-            Your mission is to execute the following Teaching Strategy: {}\
-            \nFollowing this Plan: {}\n\n\
-            RESOURCES:\n- Wiki Knowledge: {}\n- Student History: {}\n\n\
-            INSTRUCTIONS:\n\
-            - If Socratic, ask one deep question instead of giving the answer. \
-            - If Direct, use analogies and examples. \
-            - Always cite related wiki concepts using [[Concept Name]] syntax. \
-            - Keep your tone supportive yet intellectually challenging.",
-            strategy, plan, context.wiki_index, context.user_profile
-        );
+        let system_prompt = crate::prompts::TUTOR_SYSTEM_PROMPT
+            .replace("{strategy}", &strategy)
+            .replace("{plan}", &plan)
+            .replace("{wiki_index}", &context.wiki_index)
+            .replace("{user_profile}", &context.user_profile);
 
-        let user_prompt = format!("User Current Input: {}", context.user_input);
+        let user_prompt = crate::prompts::TUTOR_USER_PROMPT
+            .replace("{user_input}", &context.user_input);
 
         let response = llm.chat_completion(&system_prompt, &user_prompt).await?;
 

@@ -18,23 +18,12 @@ impl Agent for SynthesizerAgent {
     }
 
     async fn run(&self, context: &AgentContext, llm: &dyn LLMClient) -> Result<AgentResult> {
-        let system_prompt = format!(
-            "You are the Knowledge Synthesizer for Decentralized DeepTutor. \
-            Your goal is to formalize the current learning interaction into a structured wiki update. \
-             \
-            INSTRUCTIONS: \
-            1. Extract the core concept learned or the primary misconception identified. \
-            2. Format the output as a Markdown file with YAML frontmatter. \
-            3. Frontmatter fields: title, tags, citations (wiki links), last_updated. \
-            \nWiki Context:\n{}\n\nUser Profile:\n{}",
-            context.wiki_index, context.user_profile
-        );
+        let system_prompt = crate::prompts::SYNTHESIZER_SYSTEM_PROMPT
+            .replace("{wiki_index}", &context.wiki_index)
+            .replace("{user_profile}", &context.user_profile);
 
-        let user_prompt = format!(
-            "Interaction to Synthesize:\nUser Input: {}\n\nDecide if we should create a new concept page or update the user_profile.md. \
-            Output the full markdown content.",
-            context.user_input
-        );
+        let user_prompt = crate::prompts::SYNTHESIZER_USER_PROMPT
+            .replace("{user_input}", &context.user_input);
 
         let synthesis = llm.chat_completion(&system_prompt, &user_prompt).await?;
 

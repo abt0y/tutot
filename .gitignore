@@ -1,0 +1,51 @@
+# Include standard ignores for Rust projects
+# ============================
+/target
+Cargo.lock
+
+# Include standard ignores for Python projects
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+*~
+.env
+.env.*
+.venv/
+venv/
+ENV/
+.env.bak/
+.env.local/
+
+# Node / JS / TS project ignores
+# ============================
+node_modules/
+dist/
+build/
+coverage/
+
+# Docker build artifacts
+# ============================
+docker-compose.yml
+Dockerfile
+
+# IDE files
+# ============================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Miscellaneous
+# ============================
+.DS_Store
+*.log
+*.tmp
+
+# Specific project folders that should never be committed with binaries
+# ============================
+DeepTutor/*/assets/
+EOF

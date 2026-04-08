@@ -16,3 +16,4 @@ wiki = { path = "../wiki" }
 pedagogy = { path = "../pedagogy" }
 chrono = { version = "0.4", features = ["serde"] }
 reqwest = { workspace = true }
+backoff = { version = "0.4", features = ["tokio"] }

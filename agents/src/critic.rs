@@ -18,24 +18,13 @@ impl Agent for CriticAgent {
     }
 
     async fn run(&self, context: &AgentContext, llm: &dyn LLMClient) -> Result<AgentResult> {
-        let system_prompt = format!(
-            "You are the Grounding Critic for Decentralized DeepTutor. \
-            Your goal is to analyze the Tutor's response against the Wiki Knowledge and User Profile. \
-             \
-            CHECKLIST: \
-            1. Fact-check: Is the information consistent with the Wiki? \
-            2. Misconceptions: Did the user express a misunderstanding that wasn't corrected? \
-            3. Alignment: Does the response follow the Planner's strategy? \
-             \
-            Wiki Context:\n{}\n\nUser Profile:\n{}",
-            context.wiki_index, context.user_profile
-        );
+        let system_prompt = crate::prompts::CRITIC_SYSTEM_PROMPT
+            .replace("{wiki_index}", &context.wiki_index)
+            .replace("{user_profile}", &context.user_profile);
 
-        let user_prompt = format!(
-            "Interaction to Critique:\nUser: {}\nTutor: {}\n\nEvaluate and provide brief feedback.",
-            context.user_input,
-            context.metadata.get("tutor_response").cloned().unwrap_or_default()
-        );
+        let user_prompt = crate::prompts::CRITIC_USER_PROMPT
+            .replace("{user_input}", &context.user_input)
+            .replace("{tutor_response}", &context.metadata.get("tutor_response").cloned().unwrap_or_default());
 
         let critique = llm.chat_completion(&system_prompt, &user_prompt).await?;
 
